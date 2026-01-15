@@ -89,25 +89,26 @@ function App() {
   const [tPlot, setTPlot] = useState(null);
   const [tLoading, setTLoading] = useState(false);
 
-  const runTTest = async () => {
-    if (!tCity1 || !tCity2 || !tPollutant) return;
-    setTLoading(true);
-    setTResult(null);
-    setTPlot(null);
-    try {
-      const payload = {
-        city1: tCity1.value,
-        city2: tCity2.value,
-        pollutant: tPollutant,
-      };
-      const res = await axios.post(`${API_BASE_URL}/api/ttest`, payload);
-      setTResult(res.data);
-      setTPlot(res.data.plot);
-    } catch (err) {
-      console.error("T-test failed", err);
-    }
-    setTLoading(false);
-  };
+const runTTest = async () => {
+  if (!tCity1 || !tCity2 || !tPollutant) return;
+  setTLoading(true);
+  setTResult(null);
+  setTPlot(null);
+  try {
+    const payload = {
+      city1: tCity1.value,
+      city2: tCity2.value,
+      pollutant: tPollutant,
+      year: year
+    };
+    const res = await axios.post(`${API_BASE_URL}/api/ttest`, payload);
+    setTResult(res.data);
+    setTPlot(res.data.plot);
+  } catch (err) {
+    console.error("T-test failed", err);
+  }
+  setTLoading(false);
+};
 
   // --- ANOVA STATE ---
   const [aCities, setACities] = useState([]);
@@ -118,25 +119,26 @@ function App() {
   const [aLoading, setALoading] = useState(false);
 
   const runANOVA = async () => {
-    if (aCities.length < 2 || !aPollutant) return;
-    setALoading(true);
-    setAResult(null);
-    setAPlot(null);
-    setAPostHoc(null);
-    try {
-      const payload = {
-        cities: aCities.map((c) => c.value),
-        pollutant: aPollutant,
-      };
-      const res = await axios.post(`${API_BASE_URL}/api/anova`, payload);
-      setAResult(res.data);
-      setAPlot(res.data.plot);
-      setAPostHoc(res.data.posthoc);
-    } catch (err) {
-      console.error("ANOVA failed", err);
-    }
-    setALoading(false);
-  };
+  if (aCities.length < 2 || !aPollutant) return;
+  setALoading(true);
+  setAResult(null);
+  setAPlot(null);
+  setAPostHoc(null);
+  try {
+    const payload = {
+      cities: aCities.map((c) => c.value),
+      pollutant: aPollutant,
+      year: year
+    };
+    const res = await axios.post(`${API_BASE_URL}/api/anova`, payload);
+    setAResult(res.data);
+    setAPlot(res.data.plot);
+    setAPostHoc(res.data.posthoc);
+  } catch (err) {
+    console.error("ANOVA failed", err);
+  }
+  setALoading(false);
+};
 
   // --- CHI-SQUARE STATE ---
   const [cCities, setCCities] = useState([]);
@@ -145,20 +147,23 @@ function App() {
   const [cLoading, setCLoading] = useState(false);
 
   const runChiSquare = async () => {
-    if (cCities.length < 2) return;
-    setCLoading(true);
-    setCResult(null);
-    setCPlot(null);
-    try {
-      const payload = { cities: cCities.map((c) => c.value) };
-      const res = await axios.post(`${API_BASE_URL}/api/chisquare`, payload);
-      setCResult(res.data);
-      setCPlot(res.data.plot);
-    } catch (err) {
-      console.error("Chi-square failed", err);
-    }
-    setCLoading(false);
-  };
+  if (cCities.length < 2) return;
+  setCLoading(true);
+  setCResult(null);
+  setCPlot(null);
+  try {
+    const payload = {
+      cities: cCities.map((c) => c.value),
+      year: year
+    };
+    const res = await axios.post(`${API_BASE_URL}/api/chisquare`, payload);
+    setCResult(res.data);
+    setCPlot(res.data.plot);
+  } catch (err) {
+    console.error("Chi-square failed", err);
+  }
+  setCLoading(false);
+};
 
   return (
     <div className="App">
@@ -645,4 +650,5 @@ function App() {
 }
 
 export default App;
+
 
