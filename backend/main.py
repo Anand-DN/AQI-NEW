@@ -55,11 +55,7 @@ app.add_middleware(
 # ==========================
 
 DATA_CACHE = {}
-from fastapi.responses import JSONResponse
 
-@app.options("/{path:path}")
-async def preflight_handler():
-    return JSONResponse({"status": "ok"})
 
 @app.on_event("startup")
 async def preload_data():
@@ -77,6 +73,13 @@ async def preload_data():
             print("⚠ No AQI dataset found at startup")
     except Exception as e:
         print(f"Startup error: {e}")
+
+
+from fastapi.responses import JSONResponse
+
+@app.options("/{path:path}")
+async def preflight_handler():
+    return JSONResponse({"status": "ok"})
 
 # ==========================
 # REQUEST MODELS
@@ -757,6 +760,7 @@ if __name__ == "__main__":
         port=8000,
         reload=True
     )
+
 
 
 
