@@ -38,7 +38,10 @@ app = FastAPI(title="AQI Analysis API", version="2.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['*'],
+    allow_origins=[
+        "https://aqi-new-2.onrender.com", # Your frontend URL
+        "http://localhost:3000"           # For local testing
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -870,6 +873,7 @@ if __name__ == "__main__":
         port=8000,
         reload=True
     )
+
 
 
 
