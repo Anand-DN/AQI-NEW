@@ -37,17 +37,17 @@ from statsmodels.stats.multitest import multipletests
 load_dotenv()
 app = FastAPI(title="AQI Analysis API", version="3.0.0")
 
-origins = [
-    "https://aqi-new-2.onrender.com",
-    "http://localhost:3000",
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=[
+        "https://aqi-new-2.onrender.com",   # FRONTEND
+        "http://localhost:3000",
+        "http://localhost:5173"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # ==========================
@@ -55,6 +55,11 @@ app.add_middleware(
 # ==========================
 
 DATA_CACHE = {}
+from fastapi.responses import JSONResponse
+
+@app.options("/{path:path}")
+async def preflight_handler():
+    return JSONResponse({"status": "ok"})
 
 @app.on_event("startup")
 async def preload_data():
@@ -752,5 +757,6 @@ if __name__ == "__main__":
         port=8000,
         reload=True
     )
+
 
 
