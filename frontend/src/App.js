@@ -4,8 +4,7 @@ import React, { useEffect, useState } from "react";
 import Select from "react-select";
 import "./App.css";
 
-const API_BASE_URL =
-  process.env.REACT_APP_API_BASE_URL || "http://localhost:8000";
+const API_BASE_URL ="https://aqi-new-1.onrender.com";
 
 function App() {
   const [cities, setCities] = useState([]);
@@ -646,3 +645,4 @@ function App() {
 }
 
 export default App;
+
