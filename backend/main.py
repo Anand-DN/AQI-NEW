@@ -81,6 +81,23 @@ from fastapi.responses import JSONResponse
 async def preflight_handler():
     return JSONResponse({"status": "ok"})
 
+@app.options("/api/anova")
+async def anova_options():
+    return {"ok": True}
+
+@app.options("/api/chisquare")
+async def chi_options():
+    return {"ok": True}
+
+@app.middleware("http")
+async def add_cors_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["Access-Control-Allow-Origin"] = "https://aqi-new-2.onrender.com"
+    response.headers["Access-Control-Allow-Methods"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "*"
+    return response
+
+
 # ==========================
 # REQUEST MODELS
 # ==========================
@@ -760,6 +777,7 @@ if __name__ == "__main__":
         port=8000,
         reload=True
     )
+
 
 
 
