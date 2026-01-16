@@ -316,27 +316,54 @@ function App() {
           {/* -------------------- CORRELATION SECTION -------------------- */}
           {results.correlation_matrix && (
             <section className="stats-section">
-              <h3>🔗 Correlation Heatmap (Spearman)</h3>
+              <h3>🔗 Correlation Analysis (Spearman)</h3>
+
+              {/* ---- Method / Hypothesis ---- */}
+              <div style={{ marginBottom: "10px", fontSize: "15px" }}>
+                <strong>Method:</strong> Spearman Rank Correlation (ρ)
+                <br />
+                <strong>H₀:</strong> No monotonic relationship (ρ = 0)
+                <br />
+                <strong>H₁:</strong> Monotonic correlation exists (ρ ≠ 0)
+              </div>
+
+              {/* ---- Heatmap ---- */}
               <img
                 src={`data:image/png;base64,${results.visualizations?.correlation_heatmap}`}
-                style={{ width: "100%", borderRadius: "10px" }}
+                style={{
+                  width: "100%",
+                  borderRadius: "10px",
+                  marginTop: "6px",
+                }}
                 alt="corr-heatmap"
               />
 
-              <h4 style={{ marginTop: "12px" }}>Pairwise Correlations</h4>
+              {/* ---- Pairs ---- */}
+              <h4 style={{ marginTop: "15px" }}>Pairwise Correlations</h4>
+
               {results.correlation_pairs &&
                 Object.entries(results.correlation_pairs).map(
-                  ([pair, info], idx) => (
-                    <div key={idx} className="corr-row">
-                      <strong>{pair.replace("-", " — ")}</strong>: ρ=
-                      {info.rho.toFixed(3)}, p={info.p.toFixed(4)}{" "}
-                      {info.significant ? (
-                        <span className="sig">significant</span>
-                      ) : (
-                        <span className="nonsig">ns</span>
-                      )}
-                    </div>
-                  )
+                  ([pair, info], idx) => {
+                    const pval =
+                      info.p < 0.0001 ? "< 0.0001" : info.p.toFixed(4);
+
+                    const decision = info.significant
+                      ? "Reject Null Hypothesis (H₀) → Significant"
+                      : "Accept Null Hypothesis (H₀) → Not significant";
+
+                    return (
+                      <div key={idx} className="corr-row">
+                        <strong>{pair.replace("-", " — ")}</strong>: ρ=
+                        {info.rho.toFixed(3)}, p={pval} —{" "}
+                        <span
+                          className={info.significant ? "sig" : "nonsig"}
+                          style={{ marginLeft: "4px" }}
+                        >
+                          {decision}
+                        </span>
+                      </div>
+                    );
+                  }
                 )}
             </section>
           )}
@@ -370,7 +397,7 @@ function App() {
               </div>
             </section>
           )}
-         console.log(results.qqplots)
+          console.log(results.qqplots)
           {/* =======================================================
     NORMALITY TESTS — GROUPED SECTION
    ======================================================= */}
@@ -473,34 +500,75 @@ function App() {
                   </button>
 
                   {tResult && (
-                    <div className="test-result">
+                    <div className="test-result" style={{ fontSize: "15px" }}>
+                      {/* ---- Hypotheses ---- */}
+                      <div style={{ marginBottom: "8px" }}>
+                        <strong>H₀:</strong> Mean pollutant level is equal
+                        between {tCity1.value} and {tCity2.value}
+                        <br />
+                        <strong>H₁:</strong> Mean pollutant level differs
+                        between {tCity1.value} and {tCity2.value}
+                      </div>
+
+                      {/* ---- Method ---- */}
                       <p>
                         <strong>Method:</strong> {tResult.method}
                       </p>
+
+                      {/* ---- t, df, p ---- */}
                       <p>
-                        <strong>T:</strong> {tResult.statistic?.toFixed(4)}
-                      </p>
-                      <p>
-                        <strong>P:</strong> {tResult.pvalue?.toFixed(5)}
-                      </p>
-                      <p>
-                        <strong>Effect Size (d):</strong>{" "}
-                        {tResult.effect_size?.toFixed(3)}
-                      </p>
-                      <p style={{ fontWeight: "600" }}>
-                        {tResult.pvalue < 0.05
-                          ? "❌ Significant difference (reject H₀)"
-                          : "✔ No difference (fail to reject H₀)"}
+                        <strong>T-Statistic:</strong>{" "}
+                        {tResult.statistic?.toFixed(4)}
                       </p>
 
-                      {/* -------- Tabs Navigation -------- */}
+                      {tResult.df && (
+                        <p>
+                          <strong>Degrees of Freedom (df):</strong>{" "}
+                          {tResult.df.toFixed(2)}
+                        </p>
+                      )}
+
+                      <p>
+                        <strong>P-Value:</strong>{" "}
+                        {tResult.pvalue < 0.0001
+                          ? "< 0.0001"
+                          : tResult.pvalue.toFixed(5)}
+                      </p>
+
+                      {/* ---- Effect Size ---- */}
+                      {tResult.effect_size && (
+                        <p>
+                          <strong>Effect Size (Cohen's d):</strong>{" "}
+                          {tResult.effect_size.toFixed(3)}{" "}
+                          <span style={{ opacity: 0.85 }}>
+                            (
+                            {tResult.effect_size < 0.2
+                              ? "Negligible"
+                              : tResult.effect_size < 0.5
+                              ? "Small"
+                              : tResult.effect_size < 0.8
+                              ? "Medium"
+                              : "Large"}
+                            )
+                          </span>
+                        </p>
+                      )}
+
+                      {/* ---- Decision ---- */}
+                      <p style={{ fontWeight: 600, marginTop: "6px" }}>
+                        {tResult.pvalue < 0.05
+                          ? "❌ Reject H₀ → Significant difference"
+                          : "✔ Fail to reject H₀ → No significant difference"}
+                      </p>
+
+                      {/* ---- Tabs ---- */}
                       <Tabs
                         tabs={tTabs}
                         active={tActiveTab}
                         onChange={setTActiveTab}
                       />
 
-                      {/* -------- Tab Content -------- */}
+                      {/* ---- Plots ---- */}
                       {tActiveTab === "Stacked Bar" && tResult.stacked_bar && (
                         <img
                           src={`data:image/png;base64,${tResult.stacked_bar}`}
@@ -534,7 +602,7 @@ function App() {
                      🧮 ANOVA — Continuous F-test + Tukey (Tabs)
                      ======================================================= */}
                 <section className="test-section">
-                  <h3>🧮 One-Way ANOVA</h3>
+                  <h3>🧮 ANOVA</h3>
                   <div className="test-row">
                     <Select
                       isMulti
@@ -588,45 +656,79 @@ function App() {
                   </button>
 
                   {aResult && (
-                    <div className="test-result">
+                    <div className="test-result" style={{ fontSize: "15px" }}>
+                      {/* ---- Hypotheses ---- */}
+                      <div style={{ marginBottom: "8px" }}>
+                        <strong>H₀:</strong> Mean pollutant levels are equal
+                        across the selected cities
+                        <br />
+                        <strong>H₁:</strong> At least one city mean differs
+                      </div>
+
+                      {/* ---- F + df + p ---- */}
                       <p>
-                        <strong>F:</strong> {aResult.fstat?.toFixed(4)}
-                      </p>
-                      <p>
-                        <strong>P:</strong> {aResult.pvalue?.toFixed(5)}
-                      </p>
-                      <p style={{ fontWeight: "600" }}>
-                        {aResult.pvalue < 0.05
-                          ? "❌ Groups differ (reject H₀)"
-                          : "✔ No difference (fail to reject H₀)"}
+                        <strong>F-Statistic:</strong>{" "}
+                        {aResult.fstat?.toFixed(4)}
                       </p>
 
-                      {/* -------- Tabs Navigation -------- */}
+                      {aResult.df_between !== undefined &&
+                        aResult.df_within !== undefined && (
+                          <p>
+                            <strong>Degrees of Freedom:</strong> df
+                            <sub>between</sub> = {aResult.df_between}, df
+                            <sub>within</sub> = {aResult.df_within}
+                          </p>
+                        )}
+
+                      <p>
+                        <strong>P-Value:</strong>{" "}
+                        {aResult.pvalue < 0.0001
+                          ? "< 0.0001"
+                          : aResult.pvalue.toFixed(5)}
+                      </p>
+
+                      {/* ---- Decision ---- */}
+                      <p style={{ fontWeight: 600, marginTop: "6px" }}>
+                        {aResult.pvalue < 0.05
+                          ? "❌ Reject Null Hypothesis (H₀) → Groups differ significantly"
+                          : "✔ Accept Null Hypothesis (H₀) → No significant difference"}
+                      </p>
+
+                      {/* ---- Tukey Explanation ---- */}
+                      <div style={{ marginTop: "4px", opacity: 0.85 }}>
+                        <strong>Post-Hoc (Tukey HSD):</strong> Used only if
+                        ANOVA is significant to detect pairwise city differences
+                      </div>
+
+                      {/* ---- Tabs ---- */}
                       <Tabs
                         tabs={aTabs}
                         active={aActiveTab}
                         onChange={setAActiveTab}
                       />
 
-                      {/* -------- Tab Content -------- */}
+                      {/* ---- Plots ---- */}
                       {aActiveTab === "Box" && aResult.box_plot && (
                         <img
                           src={`data:image/png;base64,${aResult.box_plot}`}
                           style={{ width: "100%" }}
                         />
                       )}
+
                       {aActiveTab === "Violin" && aResult.violin_plot && (
                         <img
                           src={`data:image/png;base64,${aResult.violin_plot}`}
                           style={{ width: "100%" }}
                         />
                       )}
+
                       {aActiveTab === "Tukey Heatmap" && aResult.tukey_plot && (
                         <img
                           src={`data:image/png;base64,${aResult.tukey_plot}`}
                           style={{ width: "100%" }}
                         />
                       )}
+
                       {aActiveTab === "Tukey Table" && (
                         <table className="posthoc-table">
                           <thead>
@@ -644,7 +746,11 @@ function App() {
                                 <td>{row.group1}</td>
                                 <td>{row.group2}</td>
                                 <td>{row.meandiff.toFixed(2)}</td>
-                                <td>{row.p_adj.toFixed(4)}</td>
+                                <td>
+                                  {row.p_adj < 0.0001
+                                    ? "< 0.0001"
+                                    : row.p_adj.toFixed(4)}
+                                </td>
                                 <td>{row.reject ? "Yes" : "No"}</td>
                               </tr>
                             ))}
@@ -654,6 +760,7 @@ function App() {
                     </div>
                   )}
                 </section>
+
                 {/* =======================================================
                      🔢 CHI-SQUARE — City × AQI Category
                      ======================================================= */}
@@ -693,23 +800,59 @@ function App() {
                   </button>
 
                   {cResult && (
-                    <div className="test-result">
+                    <div className="test-result" style={{ fontSize: "15px" }}>
+                      {/* ---- Hypotheses ---- */}
+                      <div style={{ marginBottom: "8px" }}>
+                        <strong>H₀:</strong> AQI category distribution is the
+                        same across selected cities
+                        <br />
+                        <strong>H₁:</strong> At least one city differs in AQI
+                        category distribution
+                      </div>
+
+                      {/* ---- Chi-square stat ---- */}
                       <p>
-                        <strong>Chi²:</strong> {cResult.chisq?.toFixed(4)}
-                      </p>
-                      <p>
-                        <strong>P:</strong> {cResult.pvalue?.toFixed(5)}
-                      </p>
-                      <p style={{ fontWeight: "600" }}>
-                        {cResult.pvalue < 0.05
-                          ? "❌ Category distributions differ (reject H₀)"
-                          : "✔ No difference (fail to reject H₀)"}
+                        <strong>Chi² Statistic:</strong>{" "}
+                        {cResult.chisq?.toFixed(4)}
                       </p>
 
+                      {/* ---- Degrees of Freedom ---- */}
+                      {cResult.df !== undefined && (
+                        <p>
+                          <strong>Degrees of Freedom (df):</strong> {cResult.df}
+                        </p>
+                      )}
+
+                      {/* ---- P-value ---- */}
+                      <p>
+                        <strong>P-Value:</strong>{" "}
+                        {cResult.pvalue < 0.0001
+                          ? "< 0.0001"
+                          : cResult.pvalue.toFixed(5)}
+                      </p>
+
+                      {/* ---- Decision ---- */}
+                      <p style={{ fontWeight: 600, marginTop: "6px" }}>
+                        {cResult.pvalue < 0.05
+                          ? "❌ Reject H₀ → Cities differ in AQI category distribution"
+                          : "✔ Fail to reject H₀ → No significant difference in AQI categories"}
+                      </p>
+
+                      {/* ---- Interpretation note ---- */}
+                      <div style={{ opacity: 0.85, marginTop: "4px" }}>
+                        <strong>Test Type:</strong> Chi-Square Test of
+                        Independence
+                      </div>
+
+                      {/* ---- Heatmap ---- */}
                       {cResult.plot && (
                         <img
                           src={`data:image/png;base64,${cResult.plot}`}
-                          style={{ width: "100%", borderRadius: "10px" }}
+                          style={{
+                            width: "100%",
+                            borderRadius: "10px",
+                            marginTop: "10px",
+                          }}
                         />
                       )}
                     </div>
@@ -727,28 +870,6 @@ function App() {
               <pre className="summary-text">{results.ai_summary}</pre>
             </section>
           )}
-          {/* =======================================================
-              🔮 FORECAST
-              ======================================================= */}
-          {results.predictions && !results.predictions.error && (
-            <section className="predictions-section">
-              <h3>🔮 Forecast — {results.predictions.forecast_period} steps</h3>
-
-              <div className="forecast-grid">
-                {results.predictions.forecasted_values.map((v, i) => (
-                  <div key={i} className="forecast-card">
-                    <div className="forecast-value">{v.toFixed(2)}</div>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-          {results.predictions && results.predictions.error && (
-            <section className="predictions-section">
-              <h3>Forecast Status</h3>
-              <div className="error-message">{results.predictions.error}</div>
-            </section>
-          )}
         </div>
       )}
     </div>
@@ -756,4 +877,3 @@ function App() {
 }
 
 export default App;
-
