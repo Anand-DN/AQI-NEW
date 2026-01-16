@@ -7,6 +7,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse
+from scipy.stats import chi2_contingency
 
 import pandas as pd
 import numpy as np
@@ -877,22 +878,20 @@ async def chi_api(req: ChiRequest):
     plt.close(fig)
 
     return convert_np({
-        "method": "Chi-square Independence Test",
-        "cities": req.cities,
+    "method": "Chi-Square Test of Independence",
+    "chisq": float(chi),
+    "pvalue": float(p),
+    "df": int(dof),
+    "null": "H0: AQI category distribution is independent of city",
+    "alt": "H1: AQI category distribution depends on city",
+    "decision": "Reject Null Hypothesis (H0)" if p < 0.05 else "Accept Null Hypothesis (H0)",
+    "effect_size": float(cramers_v),
+    "plot": heat,
+    "table": tab.to_dict(),
+    "observed": tab.to_dict(),
+    "expected": pd.DataFrame(exp, index=tab.index, columns=tab.columns).to_dict()
+})
 
-        "H0": H0,
-        "H1": H1,
-
-        "chisq": float(chi),
-        "pvalue": float(p),
-        "p_fmt": p_fmt,
-        "df": dof,
-        "effect_size_v": float(cramers_v),
-
-        "decision": decision,
-        "plot": heat,
-        "table": tab.to_dict()
-    })
 
 
 # ================================================
