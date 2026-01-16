@@ -533,6 +533,7 @@ async def run_analysis(req: AnalysisRequest):
         "correlation_pairs": corr_out["pairs"],  # pairwise rho + p + significance
 
         # QQ + Normality
+        "qqplots":qq,
         "qqplot_aqi": qq.get("aqi"),
         "qqplots_pollutants": {p:qq.get(p) for p in pollutants if p in qq},
 
