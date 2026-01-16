@@ -254,8 +254,9 @@ const runTTest = async () => {
             justifyContent: "center",
             gap: "8px",
           }}
+          disabled={loading || selectedCities.length === 0}
         >
-          🚀 Run Analysis
+           {loading ? "⏳ Analyzing..." : "🚀 Run Analysis"}
         </button>
       </div>
 
@@ -650,6 +651,7 @@ const runTTest = async () => {
 }
 
 export default App;
+
 
 
 
