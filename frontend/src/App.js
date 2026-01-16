@@ -101,7 +101,7 @@ const runTTest = async () => {
       pollutant: tPollutant,
       year: year
     };
-    const res = await axios.post(`${API_BASE_URL}/api/ttest`, payload, { withCredentials: true });
+    const res = await axios.post(`${API_BASE_URL}/api/ttest`, payload);
     setTResult(res.data);
     setTPlot(res.data.plot);
   } catch (err) {
@@ -650,6 +650,7 @@ const runTTest = async () => {
 }
 
 export default App;
+
 
 
 
