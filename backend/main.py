@@ -264,24 +264,26 @@ def calculate_variability(df):
 # QQ PLOTS (AQI + Pollutants)
 # ================================================
 
+from scipy.stats import probplot
+
 def generate_qq(df):
     pollutants = ["aqi","pm25","pm10","o3","no2","so2","co"]
     qq = {}
 
     for p in pollutants:
-        if p not in df.columns:
+        if p not in df.columns: 
             continue
-        vals = df[p].dropna()
-        if len(vals)==0: continue
 
-        try:
-            fig = plt.figure(figsize=(4.5,4))
-            qqplot(vals, line='s')
-            plt.title(f"QQ Plot — {p.upper()}")
-            qq[p] = fig_to_base64(fig)
-            plt.close(fig)
-        except Exception:
-            qq[p] = None
+        vals = df[p].dropna()
+        if len(vals) < 5:
+            continue
+
+        fig = plt.figure(figsize=(4,4), dpi=100)
+        ax = fig.add_subplot(111)
+        probplot(vals, dist="norm", plot=ax)
+        plt.tight_layout()
+        qq[p] = fig_to_base64(fig)
+        plt.close(fig)
 
     return qq
 
@@ -687,65 +689,58 @@ async def anova_api(req: ANOVARequest):
     if len(df['city'].unique()) < 2:
         raise HTTPException(status_code=400, detail="Need 2+ cities for ANOVA")
 
-    # Build sample groups
+    # Build groups
     groups = [df[df['city']==c][pol] for c in req.cities]
-    sizes = [len(g) for g in groups if len(g)>2]
-    if len(sizes) < 2:
+    if sum(len(g)>2 for g in groups) < 2:
         raise HTTPException(status_code=400, detail="Insufficient samples")
 
-    # --------- ANOVA ---------
+    # ---------- ANOVA ----------
     fstat, pval = f_oneway(*groups)
 
-    # --------- Tukey HSD ---------
-    tukey_res = pairwise_tukeyhsd(df[pol], df['city'], alpha=0.05)
+    # ---------- TUKEY HSD ----------
+    tukey = pairwise_tukeyhsd(df[pol], df['city'], alpha=0.05)
 
-    # Tukey table conversion
     tukey_table = []
-    for i in range(len(tukey_res.meandiffs)):
+    for i in range(len(tukey.meandiffs)):
+        g1 = tukey.groupsunique[tukey.pairindices[i][0]]
+        g2 = tukey.groupsunique[tukey.pairindices[i][1]]
         tukey_table.append({
-            "group1": str(tukey_res._groupsunique[tukey_res._multicomp.pairindices[i][0]]),
-            "group2": str(tukey_res._groupsunique[tukey_res._multicomp.pairindices[i][1]]),
-            "meandiff": float(tukey_res.meandiffs[i]),
-            "p_adj": float(tukey_res.pvalues[i]),
-            "reject": bool(tukey_res.reject[i])
+            "group1": str(g1),
+            "group2": str(g2),
+            "meandiff": float(tukey.meandiffs[i]),
+            "p_adj": float(tukey.pvalues[i]),
+            "reject": bool(tukey.reject[i])
         })
 
-    # --------- Box Plot ---------
+    # ---------- BOX ----------
     fig, ax = plt.subplots(figsize=(9,5))
     sns.boxplot(data=df, x='city', y=pol, ax=ax)
-    plt.title(f"ANOVA Boxplot — {pol.upper()}")
     plt.xticks(rotation=20)
     box_plot = fig_to_base64(fig)
 
-    # --------- Violin Plot ---------
+    # ---------- VIOLIN ----------
     fig, ax = plt.subplots(figsize=(9,5))
     sns.violinplot(data=df, x='city', y=pol, ax=ax)
-    plt.title(f"ANOVA Violin — {pol.upper()}")
     plt.xticks(rotation=20)
     violin_plot = fig_to_base64(fig)
 
-    # --------- Tukey Heatmap (Binary significance) ---------
-    uniq = list(df['city'].unique())
-    uniq.sort()
+    # ---------- TUKEY HEATMAP ----------
+    uniq = list(tukey.groupsunique)
     mat = pd.DataFrame(0, index=uniq, columns=uniq)
-    for row in tukey_table:
-        g1, g2, rej = row['group1'], row['group2'], row['reject']
-        mat.loc[g1,g2] = 1 if rej else 0
-        mat.loc[g2,g1] = 1 if rej else 0
+    for r in tukey_table:
+        mat.loc[r["group1"], r["group2"]] = 1 if r["reject"] else 0
+        mat.loc[r["group2"], r["group1"]] = 1 if r["reject"] else 0
 
     fig, ax = plt.subplots(figsize=(7,5))
     sns.heatmap(mat, annot=True, cmap='Reds', cbar=False)
-    plt.title("Tukey Post-Hoc (Significance)")
-    tukey_heatmap = fig_to_base64(fig)
+    tukey_plot = fig_to_base64(fig)
 
     return convert_np({
-        "fstat": fstat,
-        "pvalue": pval,
-        "decision": "reject H0" if pval<0.05 else "fail to reject H0",
-
+        "fstat": float(fstat),
+        "pvalue": float(pval),
+        "decision": "reject H0" if pval < 0.05 else "fail to reject H0",
         "tukey_table": tukey_table,
-        "tukey_plot": tukey_heatmap,
-
+        "tukey_plot": tukey_plot,
         "box_plot": box_plot,
         "violin_plot": violin_plot
     })
