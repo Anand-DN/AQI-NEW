@@ -32,7 +32,7 @@ Built using a **FastAPI backend** and a **React.js frontend**, it offers a highl
 ## 🔗 Live Application
 
 ⭐⭐⭐ **Try it here:**  
-👉 https://real-time-air-quality-index-aqi-analysis-obgu.onrender.com ⭐⭐⭐
+👉 https://aqi-new-2.onrender.com ⭐⭐⭐
 
 ---
 
