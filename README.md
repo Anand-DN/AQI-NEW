@@ -4,10 +4,12 @@
 A Full-Stack Data Science Web Application for environmental analytics.
 
 <p align="center">
-<img src="https://img.shields.io/badge/FastAPI-Backend-009688?style=for-the-badge&logo=fastapi&logoColor=white"/>
-<img src="https://img.shields.io/badge/React-Frontend-61DAFB?style=for-the-badge&logo=react&logoColor=white"/>
-<img src="https://img.shields.io/badge/Python-Data%20Science-3776AB?style=for-the-badge&logo=python&logoColor=white"/>
-<img src="https://img.shields.io/badge/ARIMA-Forecasting-5C2D91?style=for-the-badge"/>
+<img width="1904" height="777" alt="Screenshot 2026-01-21 184126" src="https://github.com/user-attachments/assets/c4dfa32c-bf59-4137-9334-81449f8efe14" />
+  <img width="1902" height="900" alt="Screenshot 2026-01-21 184134" src="https://github.com/user-attachments/assets/3891d3f0-ae19-4db4-a530-f872e0c253d9" />
+<img width="1895" height="1057" alt="Screenshot 2026-01-21 184143" src="https://github.com/user-attachments/assets/b9ee0816-bbf1-4265-98b9-085bf0b47528" />
+<img width="1898" height="1080" alt="Screenshot 2026-01-21 184205" src="https://github.com/user-attachments/assets/ad18e33e-309e-4925-8ccf-afc380c8c5bd" />
+<img width="1897" height="1069" alt="Screenshot 2026-01-21 184229" src="https://github.com/user-attachments/assets/1b41cbce-745a-4b95-9e65-54ed834b8218" />
+<img width="1887" height="1077" alt="Screenshot 2026-01-21 184253" src="https://github.com/user-attachments/assets/15ebd89f-30ef-49ea-bb99-a8badea0b7f9" />
 </p>
 
 ---
